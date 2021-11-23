@@ -29,6 +29,7 @@ def TFRecordDatasetSampler(
     async_cycle: bool = False,
     prefetch_size: Optional[int] = None,
     shard_suffix: str = "*.tfrec",
+    infinite_dataset: bool = True,
 ) -> tf.data.Dataset:
     """Create a [TFRecordDataset](https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset) based sampler.
 
@@ -133,7 +134,8 @@ def TFRecordDatasetSampler(
             deterministic=False,
         )
         ds = ds.map(deserialization_fn, num_parallel_calls=parallelism)
-        ds = ds.repeat()
+        if infinite_dataset:
+            ds = ds.repeat()
         ds = ds.batch(batch_size)
         ds = ds.prefetch(prefetch_size)
         return ds
