@@ -837,8 +837,11 @@ class SimilarityModel(tf.keras.Model):
     @classmethod
     def from_config(cls, config):
         print(config)
+        print(config.keys())
         config.pop("name")
         config.pop("layers")
+        config.pop("input_layers")
+        config.pop("output_layers")
         return super().from_config(**config)
 
     # @classmethod
