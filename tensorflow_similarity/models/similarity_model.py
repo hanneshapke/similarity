@@ -842,7 +842,7 @@ class SimilarityModel(tf.keras.Model):
         config.pop("layers")
         config.pop("input_layers")
         config.pop("output_layers")
-        _config = {}
+        _config = {"config": None}
         return super().from_config(**_config)
 
     # @classmethod
