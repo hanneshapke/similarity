@@ -53,7 +53,9 @@ from tensorflow.keras.losses import Loss
 from tqdm.auto import tqdm
 
 from tensorflow_similarity.classification_metrics import ClassificationMetric
-from tensorflow_similarity.classification_metrics import make_classification_metric  # noqa
+from tensorflow_similarity.classification_metrics import (
+    make_classification_metric,
+)  # noqa
 from tensorflow_similarity.distances import Distance
 from tensorflow_similarity.distances import distance_canonicalizer
 from tensorflow_similarity.training_metrics import DistanceMetric
@@ -92,9 +94,13 @@ class SimilarityModel(tf.keras.Model):
         self,
         optimizer: Union[Optimizer, str, Dict, List] = "rmsprop",
         loss: Optional[Union[Loss, MetricLoss, str, Dict, List]] = None,
-        metrics: Optional[Union[Metric, DistanceMetric, str, Dict, List]] = None,  # noqa
+        metrics: Optional[
+            Union[Metric, DistanceMetric, str, Dict, List]
+        ] = None,  # noqa
         loss_weights: Optional[Union[List, Dict]] = None,
-        weighted_metrics: Optional[Union[Metric, DistanceMetric, str, Dict, List]] = None,  # noqa
+        weighted_metrics: Optional[
+            Union[Metric, DistanceMetric, str, Dict, List]
+        ] = None,  # noqa
         run_eagerly: bool = False,
         steps_per_execution: int = 1,
         distance: Union[Distance, str] = "auto",
@@ -103,7 +109,7 @@ class SimilarityModel(tf.keras.Model):
         search: Union[Search, str] = "nmslib",
         evaluator: Union[Evaluator, str] = "memory",
         stat_buffer_size: int = 1000,
-        **kwargs
+        **kwargs,
     ):
         """Configures the model for training.
 
@@ -205,8 +211,7 @@ class SimilarityModel(tf.keras.Model):
             try:
                 distance = metric_loss.distance
             except AttributeError:
-                msg = ("distance='auto' only works if the first loss is a "
-                       "metric loss")
+                msg = "distance='auto' only works if the first loss is a " "metric loss"
 
                 raise ValueError(msg)
             print(
@@ -235,7 +240,7 @@ class SimilarityModel(tf.keras.Model):
             weighted_metrics=weighted_metrics,
             run_eagerly=run_eagerly,
             steps_per_execution=steps_per_execution,
-            **kwargs
+            **kwargs,
         )
 
     def create_index(
@@ -283,9 +288,7 @@ class SimilarityModel(tf.keras.Model):
         # check if we we need to set the embedding head
         num_outputs = len(self.output_names)
         if embedding_output is not None and embedding_output > num_outputs:
-            raise ValueError(
-                "Embedding_output value exceed number of model outputs"
-            )
+            raise ValueError("Embedding_output value exceed number of model outputs")
 
         if embedding_output is None and num_outputs > 1:
             print(
@@ -354,12 +357,14 @@ class SimilarityModel(tf.keras.Model):
             verbose=verbose,
         )
 
-    def index_single(self,
-                     x: Tensor,
-                     y: IntTensor = None,
-                     data: Optional[Tensor] = None,
-                     build: bool = True,
-                     verbose: int = 1):
+    def index_single(
+        self,
+        x: Tensor,
+        y: IntTensor = None,
+        data: Optional[Tensor] = None,
+        build: bool = True,
+        verbose: int = 1,
+    ):
         """Index data.
 
         Args:
@@ -379,23 +384,21 @@ class SimilarityModel(tf.keras.Model):
         """
 
         if not self._index:
-            raise Exception('You need to compile the model with a valid'
-                            'distance to be able to use the indexing')
+            raise Exception(
+                "You need to compile the model with a valid"
+                "distance to be able to use the indexing"
+            )
         if verbose:
-            print('[Indexing 1 point]')
-            print('|-Computing embeddings')
+            print("[Indexing 1 point]")
+            print("|-Computing embeddings")
 
         x = tf.expand_dims(x, axis=0)
         prediction = self.predict(x)
-        self._index.add(prediction=prediction,
-                        label=y,
-                        data=data,
-                        build=build,
-                        verbose=verbose)
+        self._index.add(
+            prediction=prediction, label=y, data=data, build=build, verbose=verbose
+        )
 
-    def lookup(
-        self, x: Tensor, k: int = 5, verbose: int = 1
-    ) -> List[List[Lookup]]:
+    def lookup(self, x: Tensor, k: int = 5, verbose: int = 1) -> List[List[Lookup]]:
         """Find the k closest matches in the index for a set of samples.
 
         Args:
@@ -410,9 +413,7 @@ class SimilarityModel(tf.keras.Model):
             List[List[Lookup]]
         """
         predictions = self.predict(x)
-        return self._index.batch_lookup(
-            predictions=predictions, k=k, verbose=verbose
-        )
+        return self._index.batch_lookup(predictions=predictions, k=k, verbose=verbose)
 
     def single_lookup(self, x: Tensor, k: int = 5) -> List[Lookup]:
         """Find the k closest matches in the index for a given sample.
@@ -443,7 +444,8 @@ class SimilarityModel(tf.keras.Model):
         calibration_metric: Union[str, ClassificationMetric] = "f1",
         matcher: Union[str, ClassificationMatch] = "match_nearest",
         extra_metrics: MutableSequence[Union[str, ClassificationMetric]] = [
-            "precision", "recall"
+            "precision",
+            "recall",
         ],  # noqa
         rounding: int = 2,
         verbose: int = 1,
@@ -599,8 +601,10 @@ class SimilarityModel(tf.keras.Model):
             IndexError: Index must contain embeddings but is currently empty.
         """
         if self._index.size() == 0:
-            raise IndexError("Index must contain embeddings but is "
-                             "currently empty. Have you run model.index()?")
+            raise IndexError(
+                "Index must contain embeddings but is "
+                "currently empty. Have you run model.index()?"
+            )
 
         # get embeddings
         if verbose:
@@ -631,7 +635,8 @@ class SimilarityModel(tf.keras.Model):
         y: IntTensor,
         k: int = 1,
         extra_metrics: MutableSequence[Union[str, ClassificationMetric]] = [
-            "precision", "recall"
+            "precision",
+            "recall",
         ],  # noqa
         matcher: Union[str, ClassificationMatch] = "match_nearest",
         verbose: int = 1,
@@ -669,8 +674,10 @@ class SimilarityModel(tf.keras.Model):
         # There is some code duplication in this function but that is the best
         # solution to keep the end-user API clean and doing inferences once.
         if self._index.size() == 0:
-            raise IndexError("Index must contain embeddings but is "
-                             "currently empty. Have you run model.index()?")
+            raise IndexError(
+                "Index must contain embeddings but is "
+                "currently empty. Have you run model.index()?"
+            )
 
         if not self._index.is_calibrated:
             raise ValueError("Uncalibrated model: run model.calibration()")
@@ -682,14 +689,10 @@ class SimilarityModel(tf.keras.Model):
             print("|-Computing embeddings")
         predictions = self.predict(x)
 
-        results: DefaultDict[
-            str, Dict[str, Union[str, np.ndarray]]
-        ] = defaultdict(dict)
+        results: DefaultDict[str, Dict[str, Union[str, np.ndarray]]] = defaultdict(dict)
 
         if verbose:
-            pb = tqdm(
-                total=len(self._index.cutpoints), desc="Evaluating cutpoints"
-            )
+            pb = tqdm(total=len(self._index.cutpoints), desc="Evaluating cutpoints")
 
         for cp_name, cp_data in self._index.cutpoints.items():
             # create a metric that match at the requested k and threshold
@@ -834,3 +837,7 @@ class SimilarityModel(tf.keras.Model):
     # @classmethod
     # def from_config(cls, config):
     #     return super().from_config(**config)
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
