@@ -834,10 +834,10 @@ class SimilarityModel(tf.keras.Model):
     # We don't need from_config as the index is reloaded separatly.
     # this is kept as a reminder that it was looked into and decided to split
     # the index reloading instead of overloading this method.
-    # @classmethod
-    # def from_config(cls, config):
-    #     return super().from_config(**config)
-
     @classmethod
     def from_config(cls, config):
-        return cls(**config)
+        return super().from_config(**config)
+
+    # @classmethod
+    # def from_config(cls, config):
+    #     return cls(**config)
