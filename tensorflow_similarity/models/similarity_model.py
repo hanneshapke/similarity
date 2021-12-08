@@ -836,6 +836,8 @@ class SimilarityModel(tf.keras.Model):
     # the index reloading instead of overloading this method.
     @classmethod
     def from_config(cls, config):
+        print(config)
+        config.pop("name")
         return super().from_config(**config)
 
     # @classmethod
